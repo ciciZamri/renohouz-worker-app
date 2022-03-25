@@ -1,0 +1,113 @@
+{
+  "project_info": {
+    "project_number": "950948115059",
+    "project_id": "sandbox-99",
+    "storage_bucket": "sandbox-99.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:950948115059:android:923e395dd94cdaa2d73006",
+        "android_client_info": {
+          "package_name": "com.cicitechnologies.learn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "950948115059-kocb0q0svlga63d3kcdeaa42nlhgo05d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cicitechnologies.learn",
+            "certificate_hash": "5786a8dc81e57e15b02876081b7d830a9d50c454"
+          }
+        },
+        {
+          "client_id": "950948115059-3umfn3p2ephh6cii4u0kopecqe38tsj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-PhKafRnKvOxJEvP0k7j7AviGazLxmcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "950948115059-3umfn3p2ephh6cii4u0kopecqe38tsj6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:950948115059:android:8b79c8a7535d55ccd73006",
+        "android_client_info": {
+          "package_name": "com.renohouz.client"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "950948115059-nip9aol4oslfu69jhf735774cfkmkr8e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.renohouz.client",
+            "certificate_hash": "5786a8dc81e57e15b02876081b7d830a9d50c454"
+          }
+        },
+        {
+          "client_id": "950948115059-3umfn3p2ephh6cii4u0kopecqe38tsj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-PhKafRnKvOxJEvP0k7j7AviGazLxmcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "950948115059-3umfn3p2ephh6cii4u0kopecqe38tsj6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:950948115059:android:b58936d821c8836cd73006",
+        "android_client_info": {
+          "package_name": "com.renohouz.worker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "950948115059-3umfn3p2ephh6cii4u0kopecqe38tsj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-PhKafRnKvOxJEvP0k7j7AviGazLxmcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "950948115059-3umfn3p2ephh6cii4u0kopecqe38tsj6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

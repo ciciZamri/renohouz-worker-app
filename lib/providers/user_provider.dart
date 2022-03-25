@@ -20,6 +20,7 @@ class UserProvider extends ChangeNotifier {
   double? rating;
   String? status;
   Address? address;
+  DateTime? birthDate;
 
   String? get phoneNumber => FirebaseAuth.instance.currentUser?.phoneNumber;
   String? get email => FirebaseAuth.instance.currentUser?.email;

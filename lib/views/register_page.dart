@@ -6,6 +6,9 @@ import 'package:renohouz_worker/providers/user_provider.dart';
 import 'package:renohouz_worker/utils/debugger.dart';
 import 'package:renohouz_worker/views/address_form_page.dart';
 import 'package:provider/provider.dart';
+import 'package:renohouz_worker/views/edit_skills_page.dart';
+import 'package:renohouz_worker/widgets/extra_dialog.dart';
+import 'package:intl/intl.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -26,7 +29,23 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String? addressError;
   String? skillsError;
-  String? registrationError;
+
+  @override
+  void initState() {
+    super.initState();
+    UserProvider user = context.read<UserProvider>();
+    if (user.about == null) {
+      nameController = TextEditingController();
+      aboutController = TextEditingController();
+    } else {
+      nameController = TextEditingController(text: user.name);
+      aboutController = TextEditingController(text: user.about);
+      birthDate = user.birthDate!;
+      address = user.address!;
+      skills = user.skills;
+      gender = user.gender;
+    }
+  }
 
   Widget textField(TextEditingController controller, String label,
       {String? hintText, TextInputType? type, String? Function(String?)? validator, int lines = 1, String? prefix}) {
@@ -38,7 +57,12 @@ class _RegisterPageState extends State<RegisterPage> {
         minLines: lines,
         maxLines: lines + 1,
         validator: (val) => val?.isEmpty ?? true ? 'required' : null,
-        decoration: InputDecoration(labelText: label, hintText: hintText, prefixText: prefix),
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hintText,
+          prefixText: prefix,
+          alignLabelWithHint: true,
+        ),
       ),
     );
   }
@@ -67,11 +91,17 @@ class _RegisterPageState extends State<RegisterPage> {
         });
       },
       child: Container(
-        decoration: BoxDecoration(border: Border.all()),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(6),
+        ),
         child: Row(
           children: [
             const Icon(Icons.calendar_month_rounded),
-            Text('${birthDate.day} ${birthDate.month} ${birthDate.year}'),
+            Text(DateFormat('d MMMM y').format(birthDate)),
+            const Spacer(),
+            const Icon(Icons.arrow_drop_down_rounded),
           ],
         ),
       ),
@@ -80,14 +110,18 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget addressPicker() {
     if (address == null) {
-      return TextButton.icon(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const AddressFormPage())).then((value) {
-            if (value != null) setState(() => address = value);
-          });
-        },
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Add'),
+      return Row(
+        children: [
+          TextButton.icon(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AddressFormPage())).then((value) {
+                if (value != null) setState(() => address = value);
+              });
+            },
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Add'),
+          ),
+        ],
       );
     }
     return Row(
@@ -105,22 +139,106 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  Widget skillsEditor() {
+    if (skills.isEmpty) {
+      return Row(
+        children: [
+          TextButton.icon(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => EditSkillsPage(skills))).then((value) {
+                if (value != null) {
+                  setState(() => skills = value);
+                }
+              });
+            },
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Add'),
+          ),
+        ],
+      );
+    }
+    return Wrap(
+      spacing: 6,
+      children: [
+        ...skills.map<Widget>((e) => Chip(label: Text(e))).toList(),
+        IconButton(
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => EditSkillsPage(skills))).then((value) {
+              if (value != null) {
+                setState(() => skills = value);
+              }
+            });
+          },
+          icon: const Icon(Icons.edit_rounded),
+        ),
+      ],
+    );
+  }
+
+  Widget popupMenu() {
+    return PopupMenuButton(itemBuilder: (context) {
+      return [
+        PopupMenuItem(
+            child: TextButton(
+          onPressed: () {
+            User? user = FirebaseAuth.instance.currentUser;
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes, logout')),
+                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+                  ],
+                );
+              },
+            ).then((confirm) async {
+              if (confirm && user != null) {
+                Manager.signOut().catchError((err) {
+                  Debugger.log(err);
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        content: const Text('Something went wrong. Please try again later.'),
+                        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Ok'))],
+                      );
+                    },
+                  );
+                });
+              }
+            });
+          },
+          child: const Text('Log out'),
+        ))
+      ];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 64.0, bottom: 12),
-            child: Text('Registration', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      appBar: AppBar(
+        title: const Text('Registration'),
+        actions: [popupMenu()],
+      ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+        child: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
               children: [
                 textField(nameController, 'Full name', hintText: 'Your full name'),
-                textField(aboutController, 'About', hintText: 'Tell us about yourself and what skills do you have.'),
+                textField(
+                  aboutController,
+                  'About',
+                  lines: 6,
+                  hintText: 'Tell us about yourself and what skills do you have.',
+                ),
+                const SizedBox(height: 12),
                 const Text('Gender', style: TextStyle(fontWeight: FontWeight.w600)),
                 RadioListTile(
                   dense: true,
@@ -139,79 +257,47 @@ class _RegisterPageState extends State<RegisterPage> {
                   onChanged: (String? val) => setState(() => gender = val!),
                 ),
                 const SizedBox(height: 16),
-                const Text('Birth date'),
+                const Text('Birth date', style: TextStyle(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
                 birthDatePicker(),
-                Text('Address'),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(isLoading ? 'Loading...' : 'Register'),
-                      ),
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                              if (validate()) {
-                                setState(() => isLoading = true);
-                                context
-                                    .read<UserProvider>()
-                                    .register(nameController.text, gender, aboutController.text, birthDate, address!, skills)
-                                    .catchError((err) {
-                                  setState(() {
-                                    registrationError = "Something wrong. Please try again.";
-                                    isLoading = false;
-                                  });
-                                });
-                              }
-                            },
-                    ),
-                  ],
-                ),
-                registrationError != null
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(registrationError ?? '', style: const TextStyle(color: Colors.red)),
-                      )
-                    : const SizedBox(height: 0),
+                const SizedBox(height: 20),
+                const Text('Address', style: TextStyle(fontWeight: FontWeight.w600)),
+                addressPicker(),
+                const SizedBox(height: 20),
+                const Text('Skills', style: TextStyle(fontWeight: FontWeight.w600)),
+                skillsEditor(),
+                const SizedBox(height: 128),
               ],
             ),
-          ),
-          TextButton(
-            onPressed: () {
-              User? user = FirebaseAuth.instance.currentUser;
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    content: const Text('Are you sure you want to logout?'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes, logout')),
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-                    ],
-                  );
-                },
-              ).then((confirm) async {
-                if (confirm && user != null) {
-                  Manager.signOut().catchError((err) {
-                    Debugger.log(err);
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          content: const Text('Something went wrong. Please try again later.'),
-                          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Ok'))],
-                        );
-                      },
-                    );
-                  });
-                }
-              });
-            },
-            child: const Text('Log out'),
-          ),
-        ],
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  style: ButtonStyle(minimumSize: MaterialStateProperty.all(const Size(double.infinity, 56))),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(isLoading ? 'Loading...' : 'Register'),
+                  ),
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                          if (validate()) {
+                            setState(() => isLoading = true);
+                            context
+                                .read<UserProvider>()
+                                .register(nameController.text, gender, aboutController.text, birthDate, address!, skills)
+                                .catchError((err) {
+                              showSimpleDialog(context, 'Something went wrong. Please try again');
+                              setState(() => isLoading = false);
+                            });
+                          }
+                        },
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
