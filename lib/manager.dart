@@ -8,7 +8,7 @@ import 'package:renohouz_worker/utils/server.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-enum AppStatus { loading, serverMaintenance, toRegister, toUploadPhoto, toVerifyPhoneNumber, pending, suspended, completed }
+enum AppStatus { loading, serverMaintenance, toRegister, toUploadPhoto, toVerifyPhoneNumber, completed }
 
 class Manager {
   static bool _isLoadingOnStart = false;

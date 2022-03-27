@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:renohouz_worker/widgets/extra_dialog.dart';
 
 class EditSkillsPage extends StatefulWidget {
   final List<String> initialSkills;
@@ -18,6 +19,7 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
       const Duration(seconds: 1),
       () => ['potong rumput', 'mengecat', 'pasang kipas', 'wiring'],
     );
+    result.removeWhere((e) => suggestions.contains(e));
     return result;
   }
 
@@ -45,26 +47,50 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Wrap(
                   spacing: 6,
-                  children: skills.map<Widget>((e) => Chip(label: Text(e))).toList(),
+                  children: skills
+                      .map<Widget>((e) => Chip(
+                            label: Text(e),
+                            onDeleted: () => setState(() => skills.remove(e)),
+                          ))
+                      .toList(),
                 ),
               ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
                       controller: controller,
+                      decoration: const InputDecoration(labelText: 'Skill', hintText: 'Type your skills here'),
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.add_rounded),
+                    onPressed: () {
+                      if (skills.length > 6) {
+                        showSimpleDialog(context, 'You can only add 7 skills at maximum.');
+                        return;
+                      }
+                      if (!(skills.contains(controller.text))) {
+                        setState(() {
+                          skills.add(controller.text);
+                          controller.clear();
+                        });
+                      }
+                    },
+                    icon: const Icon(Icons.add_rounded, color: Colors.amber),
                   ),
                 ],
               ),
               ...suggestions
                   .map((e) => InkWell(
-                        onTap: () => setState(() => skills.add(e)),
+                        onTap: () {
+                          if (skills.length > 6) {
+                            showSimpleDialog(context, 'You can only add 7 skills at maximum.');
+                            return;
+                          }
+                          if (!skills.contains(e)) setState(() => skills.add(e));
+                        },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

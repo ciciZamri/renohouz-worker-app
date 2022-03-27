@@ -8,7 +8,9 @@ import 'package:renohouz_worker/providers/user_provider.dart';
 import 'package:renohouz_worker/utils/debugger.dart';
 import 'package:renohouz_worker/views/activity_page.dart';
 import 'package:renohouz_worker/views/jobs_page.dart';
+import 'package:renohouz_worker/views/pending_page.dart';
 import 'package:renohouz_worker/views/profile_page.dart';
+import 'package:renohouz_worker/views/suspended_page.dart';
 import 'package:renohouz_worker/views/wallet_page.dart';
 
 class Shell extends StatefulWidget {
@@ -44,6 +46,9 @@ class _ShellState extends State<Shell> {
 
   @override
   Widget build(BuildContext context) {
+    final UserProvider user = context.read<UserProvider>();
+    if (user.status == 'pending') return const PendingPage();
+    if (user.status == 'suspended') return const SuspendedPage();
     return Scaffold(
       backgroundColor: Colors.white,
       body: IndexedStack(

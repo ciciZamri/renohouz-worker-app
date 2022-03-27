@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -36,10 +37,10 @@ class UserProvider extends ChangeNotifier {
     photoUrl = details['photoUrl'];
     gender = details['gender'];
     about = details['about'];
-    skills = details['skills'];
+    skills = (details['skills'] as List).map<String>((e) => e as String).toList();
     acceptInvitation = details['acceptInvitation'];
     completedJobCount = details['completedJobCount'];
-    rating = details['rating'];
+    rating = (details['rating'])?.toDouble();
     status = details['status'];
   }
 
@@ -53,6 +54,7 @@ class UserProvider extends ChangeNotifier {
       uri,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
+        //HttpHeaders.authorizationHeader: 'Bearer ${Manager.jwt}'
       },
       body: jsonEncode({
         "token": idToken,
@@ -75,7 +77,7 @@ class UserProvider extends ChangeNotifier {
     } else if (response.statusCode == 400) {
       throw Exception('Failed to verify id token');
     } else {
-      throw Exception('Failed to register user');
+      throw Exception('Failed to register user. Response: ${response.statusCode}');
     }
   }
 
@@ -89,7 +91,7 @@ class UserProvider extends ChangeNotifier {
       'Error to upload photo',
     );
     if (result.code == 200) {
-      Manager.status.value = AppStatus.pending;
+      Manager.status.value = AppStatus.toVerifyPhoneNumber;
     } else {
       throw Exception('Error to upload photo');
     }

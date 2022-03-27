@@ -68,6 +68,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   bool validate() {
+    formKey.currentState!.validate();
     if (address == null) {
       addressError = 'required';
     }
@@ -127,13 +128,14 @@ class _RegisterPageState extends State<RegisterPage> {
     return Row(
       children: [
         Text(address!.formattedString),
+        const Spacer(),
         IconButton(
           onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const AddressFormPage())).then((value) {
               if (value != null) setState(() => address = value);
             });
           },
-          icon: const Icon(Icons.edit_rounded),
+          icon: const Icon(Icons.edit_rounded, color: Colors.amber),
         ),
       ],
     );
@@ -169,7 +171,7 @@ class _RegisterPageState extends State<RegisterPage> {
               }
             });
           },
-          icon: const Icon(Icons.edit_rounded),
+          icon: const Icon(Icons.edit_rounded, color: Colors.amber),
         ),
       ],
     );
@@ -179,41 +181,33 @@ class _RegisterPageState extends State<RegisterPage> {
     return PopupMenuButton(itemBuilder: (context) {
       return [
         PopupMenuItem(
-            child: TextButton(
-          onPressed: () {
-            User? user = FirebaseAuth.instance.currentUser;
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  content: const Text('Are you sure you want to logout?'),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes, logout')),
-                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-                  ],
-                );
-              },
-            ).then((confirm) async {
-              if (confirm && user != null) {
-                Manager.signOut().catchError((err) {
-                  Debugger.log(err);
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        content: const Text('Something went wrong. Please try again later.'),
-                        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Ok'))],
-                      );
-                    },
-                  );
-                });
-              }
-            });
-          },
-          child: const Text('Log out'),
-        ))
+          child: TextButton(
+            onPressed: () {
+              User? user = FirebaseAuth.instance.currentUser;
+              showConfirmationDialog(context, 'Are you sure you want to logout?', 'Yes, logout').then((confirm) async {
+                if (confirm && user != null) {
+                  Manager.signOut().catchError((err) {
+                    Debugger.log(err);
+                    showSimpleDialog(context, 'Something went wrong. Please try again later.');
+                  });
+                }
+              });
+            },
+            child: const Text('Log out'),
+          ),
+        )
       ];
     });
+  }
+
+  Widget label(String label, String? errorText) {
+    return Row(
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(width: 24),
+        errorText != null ? Text(errorText, style: const TextStyle(color: Colors.red, fontSize: 12)) : const SizedBox(),
+      ],
+    );
   }
 
   @override
@@ -228,46 +222,49 @@ class _RegisterPageState extends State<RegisterPage> {
         onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
         child: Stack(
           children: [
-            ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-              children: [
-                textField(nameController, 'Full name', hintText: 'Your full name'),
-                textField(
-                  aboutController,
-                  'About',
-                  lines: 6,
-                  hintText: 'Tell us about yourself and what skills do you have.',
-                ),
-                const SizedBox(height: 12),
-                const Text('Gender', style: TextStyle(fontWeight: FontWeight.w600)),
-                RadioListTile(
-                  dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 0.0),
-                  value: 'male',
-                  title: const Text('Male', style: TextStyle(fontSize: 14)),
-                  groupValue: gender,
-                  onChanged: (String? val) => setState(() => gender = val!),
-                ),
-                RadioListTile(
-                  dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 0.0),
-                  value: 'female',
-                  title: const Text('Female', style: TextStyle(fontSize: 14)),
-                  groupValue: gender,
-                  onChanged: (String? val) => setState(() => gender = val!),
-                ),
-                const SizedBox(height: 16),
-                const Text('Birth date', style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                birthDatePicker(),
-                const SizedBox(height: 20),
-                const Text('Address', style: TextStyle(fontWeight: FontWeight.w600)),
-                addressPicker(),
-                const SizedBox(height: 20),
-                const Text('Skills', style: TextStyle(fontWeight: FontWeight.w600)),
-                skillsEditor(),
-                const SizedBox(height: 128),
-              ],
+            Form(
+              key: formKey,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+                children: [
+                  textField(nameController, 'Full name', hintText: 'Your full name'),
+                  textField(
+                    aboutController,
+                    'About',
+                    lines: 6,
+                    hintText: 'Tell us about yourself and what skills do you have.',
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Gender', style: TextStyle(fontWeight: FontWeight.w600)),
+                  RadioListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 0.0),
+                    value: 'male',
+                    title: const Text('Male', style: TextStyle(fontSize: 14)),
+                    groupValue: gender,
+                    onChanged: (String? val) => setState(() => gender = val!),
+                  ),
+                  RadioListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 0.0),
+                    value: 'female',
+                    title: const Text('Female', style: TextStyle(fontSize: 14)),
+                    groupValue: gender,
+                    onChanged: (String? val) => setState(() => gender = val!),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Birth date', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  birthDatePicker(),
+                  const SizedBox(height: 20),
+                  label('Address', addressError),
+                  addressPicker(),
+                  const SizedBox(height: 20),
+                  label('Skills', skillsError),
+                  skillsEditor(),
+                  const SizedBox(height: 128),
+                ],
+              ),
             ),
             Align(
               alignment: Alignment.bottomCenter,
@@ -288,7 +285,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                 .read<UserProvider>()
                                 .register(nameController.text, gender, aboutController.text, birthDate, address!, skills)
                                 .catchError((err) {
-                              showSimpleDialog(context, 'Something went wrong. Please try again');
+                              Debugger.log(err);
+                              showSimpleDialog(context, 'Something went wrong. Please try again.');
                               setState(() => isLoading = false);
                             });
                           }

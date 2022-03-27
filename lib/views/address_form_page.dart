@@ -63,6 +63,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
   void initState() {
     super.initState();
     locationProvider = context.read<LocationProvider>();
+    locationProvider.initialize();
     if (widget.address != null) {
       currentLocation = LocationData.fromMap({
         'latitude': widget.address!.lat,

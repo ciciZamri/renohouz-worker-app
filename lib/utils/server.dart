@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:renohouz_worker/manager.dart';
+import 'package:renohouz_worker/utils/debugger.dart';
 
 enum FetchStatus { loading, done, error }
 enum ProcessedStatus { next, retry }
@@ -99,7 +100,8 @@ class Server {
   }
 
   /// return json decoded body (jsonDecode(response.body))
-  static Future<CResponse> httpMultiPart(String baseUrl, String path, String fileKey, String filePath, Map body, String errorMessage) async {
+  static Future<CResponse> httpMultiPart(
+      String baseUrl, String path, String fileKey, String filePath, Map body, String errorMessage) async {
     http.StreamedResponse response = await simpleHttpMultiPart(baseUrl, path, fileKey, filePath, body);
     ProcessedResponse? res = await _processStreamedResponse(response);
     if (res!.status == ProcessedStatus.next) {
@@ -118,7 +120,7 @@ class Server {
 
   static Future<http.StreamedResponse> simpleHttpMultiPart(
       String baseUrl, String path, String fileKey, String filePath, Map body) async {
-    var request = http.MultipartRequest('POST', Uri.https(baseUrl, path));
+    var request = http.MultipartRequest('PUT', Uri.https(baseUrl, path));
     request.headers[HttpHeaders.authorizationHeader] = 'Bearer ${Manager.jwt}';
     body.forEach((key, value) {
       request.fields[key] = value;
@@ -208,7 +210,7 @@ class Server {
         throw Exception('Error to refresh token');
       }
     } else {
-      return ProcessedResponse(ProcessedStatus.next, statusCode: response.statusCode, body: response.stream.last);
+      return ProcessedResponse(ProcessedStatus.next, statusCode: response.statusCode, body: await response.stream.bytesToString());
     }
   }
 }
