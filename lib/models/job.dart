@@ -1,5 +1,7 @@
 import 'package:renohouz_worker/models/address.dart';
 import 'package:renohouz_worker/models/client.dart';
+import 'package:renohouz_worker/utils/debugger.dart';
+import 'package:renohouz_worker/utils/server.dart';
 
 class Job {
   late String id;
@@ -29,5 +31,32 @@ class Job {
 
   static Future<List<String>> queryAutoComplete(String prefix) async {
     return await Future.delayed(Duration(seconds: 1), () => ['test 1', 'test 2', 'test 3']);
+  }
+
+  static Future find(String keyword, double lat, double long, int skip, DateTime? firstJobCreatedTime) async {
+    String word = 'all';
+    if (keyword.isNotEmpty) {
+      word = keyword.toLowerCase().replaceAll(RegExp(' +'), '+');
+    }
+    if (keyword == "Search for jobs") word = 'all';
+    int time = firstJobCreatedTime?.millisecondsSinceEpoch ?? 0;
+    Debugger.log('/job/find/$word/$lat/$long/5000/$time/$skip/12');
+    final result = await Server.httpGet(
+      Server.jobBaseUrl,
+      '/job/find/$word/$lat/$long/5000/$time/$skip/12',
+      'Error to find jobs',
+    );
+    if (result.code == 200) {
+      if (skip == 0) {
+        return {
+          'count': result.body['count'],
+          'jobs': (result.body['jobs'] as List).map((e) => Job.fromMap(e)).toList(),
+        };
+      } else {
+        return (result.body as List).map((e) => Job.fromMap(e)).toList();
+      }
+    } else {
+      throw Exception('Error to find jobs || status: ${result.code}');
+    }
   }
 }

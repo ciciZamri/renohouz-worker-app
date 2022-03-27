@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:renohouz_worker/manager.dart';
 import 'package:renohouz_worker/providers/activity_provider.dart';
 import 'package:renohouz_worker/providers/location_provider.dart';
+import 'package:renohouz_worker/providers/search_history_provider.dart';
 import 'package:renohouz_worker/providers/user_provider.dart';
 import 'package:renohouz_worker/utils/debugger.dart';
 import 'package:renohouz_worker/views/login_page.dart';
@@ -24,6 +25,7 @@ void main() async {
       ChangeNotifierProvider<UserProvider>(create: (context) => UserProvider()),
       ChangeNotifierProvider<LocationProvider>(create: (context) => LocationProvider()),
       ChangeNotifierProvider<ActivityProvider>(create: (context) => ActivityProvider()),
+      ChangeNotifierProvider<SearchHistoryProvider>(create: (context) => SearchHistoryProvider()),
     ],
     child: const App(),
   ));
